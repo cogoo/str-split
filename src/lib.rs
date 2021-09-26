@@ -1,14 +1,14 @@
 #[derive(Debug)]
 pub struct StrSplit<'a> {
-    remainder: &'a str,
-    delimeter: &'a str,
+    remainder: Option<&'a str>,
+    delimiter: &'a str,
 }
 
 impl<'a> StrSplit<'a> {
     pub fn new(haystack: &'a str, delimeter: &'a str) -> Self {
         Self {
-            remainder: haystack,
-            delimeter,
+            remainder: Some(haystack),
+            delimiter: delimeter,
         }
     }
 }
@@ -17,17 +17,17 @@ impl<'a> Iterator for StrSplit<'a> {
     type Item = &'a str;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(next_delim) = self.remainder.find(self.delimeter) {
-            let until_delimeter = &self.remainder[..next_delim];
-            self.remainder = &self.remainder[(next_delim + self.delimeter.len())..];
-            Some(until_delimeter)
-        } else if self.remainder.is_empty() {
-            None
-        } else {
-            let rest = self.remainder;
-            self.remainder = "";
-            Some(rest)
-        }
+       if let Some(ref mut remainder) = self.remainder {
+           if let Some(next_delim) = remainder.find(self.delimiter) {
+               let until_delimiter = &remainder[..next_delim];
+               *remainder = &remainder[(next_delim + self.delimiter.len())..];
+               Some(until_delimiter)
+           } else {
+               self.remainder.take()
+           }
+       } else  {
+           None
+       }
     }
 }
 
